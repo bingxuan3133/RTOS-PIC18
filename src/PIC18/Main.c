@@ -10,9 +10,12 @@
 #include "Blinky.h"
 #include "Loopback.h"
 #include "Clock.h"
-#include "LEDSM.h"
+//#include "LEDSM.h"
+#include "Led2.h"
 #include "SevenSeg.h"
 #include "UsartLoopback.h"
+#include "Tasking.h"
+#include "Interrupt.h"
 #include "../18c.h"
 #if !(defined(__XC) || defined(__18CXX))
   #include "usart.h"
@@ -36,32 +39,31 @@
 
 int main(int argc, char** argv) {
   LoopbackData loopbackData;
-  LEDData ledData;
+  // LEDData ledData;
+  Led2Data led2Data;
   SevenSegmentData sevenSegData;
 
   setFreq8MHz();
   configureUsartTo8Bits9600Baud();
+
   initClock();
+  while(1) {
+  }
   initUsartLoopback(&loopbackData);
-  initLed(&ledData);
+  //initLed(&ledData);
+  configureLED();
+  initTasking(&led2Data);
   init7Segment(&sevenSegData);
   while(1) {
+    /*
     usartLoopbackSM(&loopbackData);
-    ledSM(&ledData);
+    // ledSM(&ledData);
+    led2SM(&led2Data);
     sevenSegmentSM(&sevenSegData);
+    */
   }
   CloseUSART();
   CloseSPI();
 
-/*
-  configureLED();
-  while(1) {
-      onLED();
-      shortDelay();
-      offLED();
-      shortDelay();
-  }
-*/
-
-  return (EXIT_SUCCESS);
+  return 0;
 }

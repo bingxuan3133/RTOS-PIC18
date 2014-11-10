@@ -8,6 +8,7 @@
 
 #define _7SEG_CONTROL (PORTDbits.RD0)
 #define _7SEG_CONTROL_TRIS (TRISDbits.TRISD0)
+
 #define MSEC_150 146
 
 char sevenSegPattern[] = {0xee, // 0
@@ -39,6 +40,13 @@ void init7SegmentHardware() {
 
 void sevenSegmentSM(SevenSegmentData *data) {
   switch(data->state) {
+    case _7SEG_INIT:
+      init7SegmentHardware();
+      data->count = 0;
+      data->currentClock = getClock();
+      write7Segment(data->count);
+      data->state = _7SEG_WAITING;
+      break;
 
     case _7SEG_WAITING:
       if(getClock() - data->currentClock >= MSEC_150) {
@@ -46,16 +54,8 @@ void sevenSegmentSM(SevenSegmentData *data) {
         if(data->count >= 15)
           data->count = 0;
         write7Segment(data->count);
+        data->currentClock = getClock();
       }
-      data->currentClock = getClock();
-      data->state = _7SEG_WAITING;
-      break;
-
-    case _7SEG_INIT:
-      init7SegmentHardware();
-      data->count = 0;
-      data->currentClock = getClock();
-      write7Segment(data->count);
       data->state = _7SEG_WAITING;
       break;
 

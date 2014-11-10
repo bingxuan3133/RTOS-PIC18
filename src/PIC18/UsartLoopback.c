@@ -9,7 +9,6 @@ void initUsartLoopback(LoopbackData *loopbackData) {
   loopbackData->dataByte = 0;
 }
 
-
 void usartLoopbackSM(LoopbackData *loopbackData) {
   switch(loopbackData->state) {
     case WAIT_DATA:

@@ -1,0 +1,23 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"11 ../src/PIC18/Clock.h
+[v _timer0Isr `(v ~T0 @X0 0 ef ]
+[; ;Clock.h: 9: extern volatile unsigned long clock;
+[; ;Clock.h: 11: void timer0Isr();
+[; ;Clock.h: 12: void initClock();
+[; ;Clock.h: 13: unsigned long getClock();
+[; ;Clock.h: 14: char hasTimer0Overflowed();
+[; ;Clock.h: 15: void clearTimer0Overflowed();
+[v F8 `(v ~T0 @X0 1 tf ]
+"4 ../src/PIC18/Interrupt.c
+[v _interruptIsr `IF8 ~T0 @X0 1 e ]
+{
+[; ;Interrupt.c: 4: void interrupt interruptIsr() {
+[e :U _interruptIsr ]
+[f ]
+[; ;Interrupt.c: 5: timer0Isr();
+"5
+[e ( _timer0Isr ..  ]
+[; ;Interrupt.c: 6: }
+"6
+[e :UE 1 ]
+}

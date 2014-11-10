@@ -4,14 +4,11 @@
 
 #define MSEC_500 488
 
-unsigned long clock = 0;
-
 void initLed(LEDData *ledData) {
   ledData->state = LED_START;
 }
 
 void ledSM(LEDData *ledData) {
-  int now = 9;
   switch(ledData->state) {
     case LED_OFF:
       if(getClock() - ledData->currentClock >= MSEC_500) {
@@ -26,7 +23,6 @@ void ledSM(LEDData *ledData) {
     case LED_START:
       ledData->currentClock = getClock();
       configureLED();
-      now += now + 2;
       ledData->state = LED_OFF;
       break;
 

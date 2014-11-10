@@ -1,24 +1,12 @@
-_OpenUSART: CODE, 31054 0 104
-_configureLED: CODE, 30398 0 4
-_ledSM: CODE, 31532 0 468
-_initClock: CODE, 30508 0 24
-_OpenSPI: CODE, 30770 0 90
-_initUsartLoopback: CODE, 30582 0 30
-_main: CODE, 30956 0 98
-_hasTimer0Overflowed: CODE, 30414 0 12
-_sevenSegmentSM: CODE, 31158 0 374
-__initialization: CODE, 30718 0 42
-_onLED: CODE, 30410 0 4
-_clearTimer0Overflowed: CODE, 30402 0 4
-_init7SegmentHardware: CODE, 30488 0 20
-_init7Segment: CODE, 30426 0 14
-_offLED: CODE, 30406 0 4
-_initLed: CODE, 30440 0 14
-_WriteUSART: CODE, 30470 0 18
-_usartLoopbackSM: CODE, 30860 0 96
-_OpenTimer0: CODE, 30642 0 32
-_ReadUSART: CODE, 30612 0 30
-_write7Segment: CODE, 30556 0 26
-_WriteSPI: CODE, 30532 0 24
-_getClock: CODE, 30674 0 44
-Total: 1576
+_OpenUSART: CODE, 136 0 104
+_configureLED: CODE, 480 0 4
+_initClock: CODE, 424 0 26
+_initUsartLoopback: CODE, 366 0 30
+_timer0Isr: CODE, 294 0 40
+_main: CODE, 396 0 28
+__initialization: CODE, 240 0 44
+_clearTimer0Overflowed: CODE, 484 0 4
+_init7Segment: CODE, 466 0 14
+_interruptIsr: CODE, 8 0 128
+_OpenTimer0: CODE, 334 0 32
+Total: 454

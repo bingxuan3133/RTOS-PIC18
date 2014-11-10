@@ -1,0 +1,66 @@
+
+# 1 "../src/PIC18/Led2.c"
+
+# 4 "../src/PIC18/Led2.h"
+typedef enum {
+LED_UNKNOWN_STATUS,
+LED_OFF,
+LED_ON
+} Led2Status;
+
+typedef struct Led2Data Led2Data;
+
+struct Led2Data {
+int state;
+Led2Status ledStatus;
+unsigned long currentClock;
+};
+
+void led2SM(Led2Data *data) ;
+
+# 16 "../src/PIC18/Blinky.h"
+void shortDelay();
+void configureLED();
+void onLED();
+void offLED();
+
+# 9 "../src/PIC18/Clock.h"
+extern volatile unsigned long clock;
+
+void timer0Isr();
+void initClock();
+unsigned long getClock();
+char hasTimer0Overflowed();
+void clearTimer0Overflowed();
+
+# 9 "../src/PIC18/Led2.c"
+void testingLed2SM(Led2Data *data) {
+
+# 23
+}
+
+void led2SM(Led2Data *data) {
+switch(data->state) { case 0:;
+while(1) {
+while(getClock() - data->currentClock < 146) {
+data->ledStatus = LED_OFF;
+offLED();
+data->state = 31; return; case 31:;
+}
+data->ledStatus = LED_ON;
+onLED();
+data->currentClock = getClock();
+data->state = 36; return; case 36:;
+
+while(getClock() - data->currentClock < 146) {
+data->ledStatus = LED_ON;
+onLED();
+data->state = 41; return; case 41:;
+}
+data->ledStatus = LED_OFF;
+offLED();
+data->currentClock = getClock();
+data->state = 46; return; case 46:;
+}
+};
+}
