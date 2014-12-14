@@ -13,10 +13,10 @@
 #define PIN_LOW 0
 #define PIN_HIGH 1
 
-void shortDelay();
-void configureLED();
-void onLED();
-void offLED();
+//void shortDelay(void);
+void configureLED(void);
+void onLED(void);
+void offLED(void);
 
 #endif // Blinky_H
 

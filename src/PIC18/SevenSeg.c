@@ -2,6 +2,12 @@
 #include "Clock.h"
 #include "../18c.h"
 
+#if !(defined(__XC) || defined(__18CXX))
+  #include "spi.h"
+#else
+  #include <spi.h>
+#endif // __18CXX
+
 #define   SPI_FOSC_4    0b00000000
 #define   MODE_11       0b00000011
 #define   SMPEND        0b10000000
@@ -32,7 +38,7 @@ void init7Segment(SevenSegmentData *data) {
   data->state = _7SEG_INIT;
 }
 
-void init7SegmentHardware() {
+void init7SegmentHardware(void) {
   OpenSPI(SPI_FOSC_4, MODE_11, SMPEND);
   _7SEG_CONTROL_TRIS = 0;
   _7SEG_CONTROL = 1;

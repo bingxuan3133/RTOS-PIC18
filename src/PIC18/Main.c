@@ -16,13 +16,17 @@
 #include "UsartLoopback.h"
 #include "Tasking.h"
 #include "Interrupt.h"
+#include "PreemptiveOS.h"
 #include "../18c.h"
+
 #if !(defined(__XC) || defined(__18CXX))
   #include "usart.h"
   #include "spi.h"
   #include "timers.h"
 #else
-    #include <usart.h>
+  #include <usart.h>
+  #include <spi.h>
+  #include <timers.h>
 #endif // __18CXX
 
 #pragma config OSC = INTIO67, PWRT = ON, WDT = OFF, LVP = OFF, DEBUG = ON
@@ -37,7 +41,13 @@
                     USART_CONT_RX &\
                     USART_BRGH_HIGH, 51);
 
-int main(int argc, char** argv) {
+void main(void) {
+  initPreemptiveMultitasking();
+  initClock();
+  while(1);
+}
+
+void xmain(void) {
   LoopbackData loopbackData;
   // LEDData ledData;
   Led2Data led2Data;
@@ -47,23 +57,17 @@ int main(int argc, char** argv) {
   configureUsartTo8Bits9600Baud();
 
   initClock();
-  while(1) {
-  }
   initUsartLoopback(&loopbackData);
   //initLed(&ledData);
   configureLED();
   initTasking(&led2Data);
   init7Segment(&sevenSegData);
   while(1) {
-    /*
     usartLoopbackSM(&loopbackData);
     // ledSM(&ledData);
     led2SM(&led2Data);
     sevenSegmentSM(&sevenSegData);
-    */
   }
-  CloseUSART();
-  CloseSPI();
-
-  return 0;
+  //CloseUSART();
+  //CloseSPI();
 }

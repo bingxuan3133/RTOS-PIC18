@@ -4,22 +4,38 @@
 void addPriorityLinkedList(PriorityLinkedList *list,
                            void *data,
                            int compare(void *, void *)) {
-  // Item *dataInList = list->head;
+  Item *itemPointer = list->head;
+  Item *previousItem;
   
-  // printf("%x", dataInList);
-  
-  // while(dataInList != NULL) {
-    // if(compare(data, dataInList) == 1) {
-      // list->head = data;
-      // list->tail = data;
-      // printf("should here");
-      // break;
-    // } else {
-      // printf("not here");;
-    // }
-	// if(dataInList->next != NULL);
-    // dataInList = dataInList->next;
-    // dataInList = data;
+  if(compare(data, itemPointer) == 1) {
+    list->head = data;
+    if(itemPointer == NULL) // empty list
+      list->tail = data;
+    else  // data should be inserted as the first item
+      ((Item *)data)->next = itemPointer;
+    return;
   }
   
+  while(1) {
+    if(compare(data, itemPointer) == 1) { // insert
+        previousItem->next = data;
+        ((Item *)data)->next = itemPointer;
+        if(itemPointer == NULL) // data should be insert at the last
+          list->tail = data;
+        break;
+      } else { // do not insert
+        previousItem = itemPointer;
+        itemPointer = itemPointer->next;
+      }
+  }
+}
+
+void *removeFromHeadPriorityLinkedList(PriorityLinkedList *list) {
+  Item *itemPointer = list->head;
+  if(itemPointer != NULL) {
+    list->head = itemPointer->next;
+    if(itemPointer->next == NULL)
+      list->tail = NULL;
+  }
+  return itemPointer;
 }

@@ -14,7 +14,7 @@ struct SevenSegmentData {
 };
 
 void init7Segment(SevenSegmentData *data);
-void init7SegmentHardware();
+void init7SegmentHardware(void);
 void sevenSegmentSM(SevenSegmentData *data);
 void write7Segment(char data);
 

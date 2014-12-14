@@ -9,6 +9,4 @@
 #define disablePeripheralInterrupt() INTCONbits.PEIE = 0
 #define getPeripheralInterrupt() INTCONbits.PEIE
 
-void interrupt interruptIsr();
-
 #endif // Interrupt_H
