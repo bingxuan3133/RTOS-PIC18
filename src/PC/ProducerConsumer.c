@@ -1,5 +1,6 @@
 #include "ProducerConsumer.h"
 #include "Semaphore.h"
+#include "Mutex.h"
 #include "Tasking.h"
 #include <stdio.h>
 
@@ -13,6 +14,7 @@ int maxYield;
 int *yieldPointer;
 Semaphore emptyCount;
 Semaphore itemCount;
+Mutex mutexBuffer;
 int itemBuffer[MAX_ITEMS];
 
 
@@ -34,6 +36,10 @@ void initProducerConsumer(void) {
   itemBuffer[0] = 0;
   itemBuffer[1] = 0;
   itemBuffer[2] = 0;
+  mutexBuffer.counter = 1;
+  mutexBuffer.owner = NULL;
+  mutexBuffer.waitingQueue.head = NULL;
+  mutexBuffer.waitingQueue.tail = NULL;
 }
 
 void addItemIntoBuffer(int item) {
@@ -65,22 +71,30 @@ int removeItemFromBuffer() {
 
 void producer(TCB *self) {
   int item = 0x5A5A5A5A;
-  printf("producer.__LINE__ = %d\n", self->task);
+  printf("producer%d.__LINE__ = %d\n", self->taskID, self->task);
   startTasking(self->task);
   
   while(1) {
   
-  downSemaphore(self, &emptyCount);
+  downSemaphore(&emptyCount, self);
   
   yieldOn(self->task, 1);
   
-  addItemIntoBuffer(item);
+  acquireMutex(&mutexBuffer, self);
 
   yieldOn(self->task, 3);
   
-  upSemaphore(&itemCount);
+  addItemIntoBuffer(item);
   
   yieldOn(self->task, 5);
+  
+  upSemaphore(&itemCount);
+  
+  yieldOn(self->task, 7);
+  
+  releaseMutex(&mutexBuffer, self);
+  
+  yieldOn(self->task, 9);
   
   }
   
@@ -89,22 +103,30 @@ void producer(TCB *self) {
 
 void consumer(TCB *self) {
   int item;
-  printf("consumer.__LINE__ = %d\n", self->task);
+  printf("consumer%d.__LINE__ = %d\n", self->taskID, self->task);
   startTasking(self->task);
   
   while(1) {
   
-  downSemaphore(self, &itemCount);
+  downSemaphore(&itemCount, self);
   
   yieldOn(self->task, 2);
   
-  item = removeItemFromBuffer();
-
+  acquireMutex(&mutexBuffer, self);
+  
   yieldOn(self->task, 4);
   
-  upSemaphore(&emptyCount);
+  item = removeItemFromBuffer();
   
   yieldOn(self->task, 6);
+  
+  upSemaphore(&emptyCount);
+
+  yieldOn(self->task, 8);
+  
+  releaseMutex(&mutexBuffer, self);
+  
+  yieldOn(self->task, 10);
   
   }
   

@@ -15,7 +15,7 @@ void upSemaphore(Semaphore *semaphore) {
   // move caller task from blocking/waitingQueue to run (if any)
 }
 
-void downSemaphore(TCB *caller, Semaphore *semaphore) {
+void downSemaphore(Semaphore *semaphore, TCB *caller) {
   semaphore->counter--;
   if(semaphore->counter >= 0) {
     ;

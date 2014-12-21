@@ -15,6 +15,6 @@ struct Semaphore {
 };
 
 void upSemaphore(Semaphore *semaphore);
-void downSemaphore(TCB *caller, Semaphore *semaphore);
+void downSemaphore(Semaphore *semaphore, TCB *caller);
 
 #endif // Semaphore_H

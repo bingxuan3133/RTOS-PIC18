@@ -1,6 +1,7 @@
 #include "unity.h"
 #include "ProducerConsumer.h"
 #include "Semaphore.h"
+#include "Mutex.h"
 #include "TaskControlBlock.h"
 #include "PriorityLinkedList.h"
 
@@ -23,11 +24,11 @@ void tearDown(void) {
 }
 
 void test_consumer_try_to_consume_item_when_buffer_is_empty_should_be_blocked(void) {
-  TCB producerTask = {0};
-  TCB consumerTask = {0};
-  int yieldOnThese[] = {2, 5, 6};
+  TCB producerTask = {.taskID = 1};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {2};
   
-  registerForYield(yieldOnThese, 3);
+  registerForYield(yieldOnThese, 1);
   initProducerConsumer();
   
   consumer(&consumerTask);
@@ -39,9 +40,9 @@ void test_consumer_try_to_consume_item_when_buffer_is_empty_should_be_blocked(vo
 }
 
 void test_producer_try_to_wake_consumer_up_from_waitingQueue(void) {
-  TCB producerTask = {0};
-  TCB consumerTask = {0};
-  int yieldOnThese[] = {2, 5, 6};
+  TCB producerTask = {.taskID = 1};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {2, 9, 10};
   
   registerForYield(yieldOnThese, 3);
   initProducerConsumer();
@@ -53,21 +54,21 @@ void test_producer_try_to_wake_consumer_up_from_waitingQueue(void) {
   TEST_ASSERT_EQUAL(2, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, itemCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, itemCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array1, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array1, itemBuffer, 3);
   
   consumer(&consumerTask);
   TEST_ASSERT_EQUAL(0, itemCount.counter);
   TEST_ASSERT_EQUAL(3, emptyCount.counter);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array0, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
 }
 
 
-void test_multiple_producer_try_to_produce_items(void) {
-  TCB producerTask1 = {0};
-  TCB producerTask2 = {0};
-  TCB producerTask3 = {0};
-  TCB consumerTask = {0};
-  int yieldOnThese[] = {1, 1, 5, 5, 5};
+void test_multiple_producers_p1_p2_has_not_acquireMutex_should_not_block_p3(void) {
+  TCB producerTask1 = {.taskID = 1};
+  TCB producerTask2 = {.taskID = 2};
+  TCB producerTask3 = {.taskID = 3};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {1, 1, 9, 9, 9};
   
   registerForYield(yieldOnThese, 5);
   initProducerConsumer();
@@ -78,7 +79,7 @@ void test_multiple_producer_try_to_produce_items(void) {
   TEST_ASSERT_EQUAL(2, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array0, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
 
   producer(&producerTask2);
   
@@ -86,7 +87,7 @@ void test_multiple_producer_try_to_produce_items(void) {
   TEST_ASSERT_EQUAL(1, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array0, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
 
   producer(&producerTask3);
   
@@ -94,7 +95,7 @@ void test_multiple_producer_try_to_produce_items(void) {
   TEST_ASSERT_EQUAL(0, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array1, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array1, itemBuffer, 3);
   
   producer(&producerTask2);
   
@@ -102,7 +103,7 @@ void test_multiple_producer_try_to_produce_items(void) {
   TEST_ASSERT_EQUAL(0, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array2, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array2, itemBuffer, 3);
   
   producer(&producerTask1);
   
@@ -110,15 +111,86 @@ void test_multiple_producer_try_to_produce_items(void) {
   TEST_ASSERT_EQUAL(0, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array3, itemBuffer, 3);  
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array3, itemBuffer, 3);  
+}
+
+void test_multiple_producers_p1_had_acquireMutex_should_block_p2_and_p3(void) {
+  TCB producerTask1 = {.taskID = 1};
+  TCB producerTask2 = {.taskID = 2};
+  TCB producerTask3 = {.taskID = 3};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {3, 3, 3, 9, 9, 9};
+  
+  registerForYield(yieldOnThese, 6);
+  initProducerConsumer();
+
+  producer(&producerTask1);
+  
+  TEST_ASSERT_EQUAL(0, itemCount.counter);
+  TEST_ASSERT_EQUAL(2, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+	TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
+
+  producer(&producerTask2);
+  
+  TEST_ASSERT_EQUAL(0, itemCount.counter);
+  TEST_ASSERT_EQUAL(1, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_PTR(&producerTask2, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(&producerTask2, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
+
+  producer(&producerTask3);
+  
+  TEST_ASSERT_EQUAL(0, itemCount.counter);
+  TEST_ASSERT_EQUAL(0, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_PTR(&producerTask2, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(&producerTask3, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array0, itemBuffer, 3);
+  
+  producer(&producerTask1);
+  
+  TEST_ASSERT_EQUAL(1, itemCount.counter);
+  TEST_ASSERT_EQUAL(0, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_PTR(&producerTask3, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(&producerTask3, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array1, itemBuffer, 3);
+  
+  producer(&producerTask2);
+  
+  TEST_ASSERT_EQUAL(2, itemCount.counter);
+  TEST_ASSERT_EQUAL(0, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array2, itemBuffer, 3);    
+  
+  producer(&producerTask3);
+  
+  TEST_ASSERT_EQUAL(3, itemCount.counter);
+  TEST_ASSERT_EQUAL(0, emptyCount.counter);
+  TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.head);
+	TEST_ASSERT_EQUAL_PTR(NULL, mutexBuffer.waitingQueue.tail);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array3, itemBuffer, 3);  
 }
 
 void test_producer_try_to_produce_item_when_buffer_is_full_should_be_blocked(void) {
-  TCB producerTask1 = {0};
-  TCB producerTask2 = {0};
-  TCB producerTask3 = {0};
-  TCB consumerTask = {0};
-  int yieldOnThese[] = {5, 5, 5, 1, 1};
+  TCB producerTask1 = {.taskID = 1};
+  TCB producerTask2 = {.taskID = 2};
+  TCB producerTask3 = {.taskID = 3};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {9, 9, 9, 1, 1};
   
   registerForYield(yieldOnThese, 5);
   initProducerConsumer();
@@ -132,7 +204,7 @@ void test_producer_try_to_produce_item_when_buffer_is_full_should_be_blocked(voi
   TEST_ASSERT_EQUAL(-1, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(&producerTask1, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(&producerTask1, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array3, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array3, itemBuffer, 3);
   
   producer(&producerTask2);
   
@@ -142,15 +214,15 @@ void test_producer_try_to_produce_item_when_buffer_is_full_should_be_blocked(voi
   TEST_ASSERT_EQUAL_PTR(&producerTask2, emptyCount.waitingQueue.head->next);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head->next->next);
 	TEST_ASSERT_EQUAL_PTR(&producerTask2, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array3, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array3, itemBuffer, 3);
 }
 
 void test_consumer_try_to_wake_producer_up_from_waitingQueue(void) {
-  TCB producerTask1 = {0};
-  TCB producerTask2 = {0};
-  TCB producerTask3 = {0};
-  TCB consumerTask = {0};
-  int yieldOnThese[] = {5, 5, 5, 1, 1, 6, 6, 5, 5};
+  TCB producerTask1 = {.taskID = 1};
+  TCB producerTask2 = {.taskID = 2};
+  TCB producerTask3 = {.taskID = 3};
+  TCB consumerTask = {.taskID = 1};
+  int yieldOnThese[] = {9, 9, 9, 1, 1, 10, 10, 9, 9};
   
   registerForYield(yieldOnThese, 9);
   initProducerConsumer();
@@ -166,12 +238,12 @@ void test_consumer_try_to_wake_producer_up_from_waitingQueue(void) {
   TEST_ASSERT_EQUAL(-1, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(&producerTask2, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(&producerTask2, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array2, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array2, itemBuffer, 3);
     
   consumer(&consumerTask);
   TEST_ASSERT_EQUAL(1, itemCount.counter);
   TEST_ASSERT_EQUAL(0, emptyCount.counter);
   TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.head);
 	TEST_ASSERT_EQUAL_PTR(NULL, emptyCount.waitingQueue.tail);
-  TEST_ASSERT_EQUAL_INT_ARRAY(array1, itemBuffer, 3);
+  TEST_ASSERT_EQUAL_HEX_ARRAY(array1, itemBuffer, 3);
 }
