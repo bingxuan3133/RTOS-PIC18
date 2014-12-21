@@ -1,1 +1,1 @@
-Error[yy] C:\Documents and Settings\D300-01\Desktop\PcControl\src\PIC18\Interrupt.h 12 : syntax error
+Warning[2074] C:\Documents and Settings\D300-01\Desktop\PcControl\src\PIC18\Clock.c 25 : location FSR2L specified in the interrupt save list is redundant

@@ -6,14 +6,14 @@
 typedef struct Item Item;
 
 struct Item {
-  void *next;
+  Item *next;
 };
 
 typedef struct PriorityLinkedList PriorityLinkedList;
 
 struct PriorityLinkedList {
-  void *head;
-  void *tail;
+  Item *head;
+  Item *tail;
 };
 
 void addPriorityLinkedList(PriorityLinkedList *list,
